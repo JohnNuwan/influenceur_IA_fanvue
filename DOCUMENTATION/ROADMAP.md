@@ -36,20 +36,28 @@
 - [x] **1.1.9** Configurer le monitoring (Prometheus + Grafana)
 
 ### ✅ 1.2 Base de données & Migrations
-- [ ] **1.2.1** Configurer Alembic pour les migrations
-- [ ] **1.2.2** Créer la première migration (tables de base)
-- [ ] **1.2.3** Ajouter des données de test/seeding
-- [ ] **1.2.4** Configurer les backups automatiques
+- [x] **1.2.1** Configurer Alembic pour les migrations
+- [x] **1.2.2** Créer la première migration (tables de base)
+- [x] **1.2.3** Ajouter des données de test/seeding
+- [x] **1.2.4** Configurer les backups automatiques
 - [ ] **1.2.5** Tests de performance de la base
 
+
+
 ### ✅ 1.3 Authentification & Sécurité
-- [ ] **1.3.1** Corriger get_current_user (✅ DÉJÀ FAIT)
-- [ ] **1.3.2** Implémenter RBAC complet (rôles et permissions)
-- [ ] **1.3.3** Ajouter la validation des tokens JWT
-- [ ] **1.3.4** Configurer CORS et sécurité des headers
-- [ ] **1.3.5** Ajouter rate limiting
+- [x] **1.3.1** Corriger get_current_user
+- [x] **1.3.2** Implémenter RBAC (rôles et permissions)
+- [x] **1.3.3** Ajouter la validation des tokens JWT
+- [x] **1.3.4** Configurer CORS et sécurité des headers
+- [x] **1.3.5** Ajouter rate limiting
 - [ ] **1.3.6** Tests de sécurité (OWASP)
 
+
+### ✅ 1.4 Routage & Accès local
+- [x] **1.4.1** Configurer Traefik pour l’API via `api.localhost` (dashboard sur `8081`)
+- [x] **1.4.2** Ajouter un router local `PathPrefix` pour accéder via `http://localhost/api/v1`
+- [x] **1.4.3** Exposer `/health` via `http://localhost/health`
+- [x] **1.4.4** Script `scripts/add_hosts.ps1` pour ajouter les hosts sur Windows
 ---
 
 ## 🎨 PHASE 2 : GÉNÉRATION DE CONTENU (Semaines 5-8)
@@ -522,6 +530,6 @@
 
 *Cette roadmap est un document vivant qui sera mis à jour régulièrement selon l'avancement et les retours utilisateurs.*
 
-**Dernière mise à jour** : [Date]
+**Dernière mise à jour** : 2025-08-09
 **Version** : 1.0
 **Statut** : En cours de développement

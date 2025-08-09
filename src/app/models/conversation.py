@@ -79,8 +79,8 @@ class Message(Base):
     ai_model = Column(String(100))  # Model used for generation
     ai_confidence = Column(Integer)  # Confidence score (0-100)
     
-    # Metadata
-    metadata = Column(JSON)  # Additional platform-specific data
+    # Additional metadata (avoid reserved name 'metadata')
+    metadata_json = Column(JSON)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

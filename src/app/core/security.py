@@ -7,6 +7,7 @@ from typing import Optional, Union
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import HTTPException, status, Depends
+from functools import wraps
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -58,6 +59,15 @@ def verify_token(token: str) -> Optional[dict]:
         return payload
     except JWTError:
         return None
+
+
+def require_roles(*allowed_roles: str):
+    """Dependency factory to enforce RBAC on endpoints."""
+    def decorator(user=Depends(get_current_user)):
+        if allowed_roles and getattr(user, "role", None) not in allowed_roles:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Insufficient permissions")
+        return user
+    return decorator
 
 
 async def get_current_user(

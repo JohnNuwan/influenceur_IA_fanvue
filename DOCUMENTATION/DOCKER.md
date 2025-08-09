@@ -33,7 +33,18 @@ chmod 600 traefik/acme.json
 cp env.example .env
 
 # Démarrer les services
-docker-compose up -d
+docker compose up -d
+
+### Accès API (deux options)
+
+1) Via Traefik avec hostnames (recommandé)
+- Ajouter les entrées dans le hosts Windows (admin) :
+  - scripts/add_hosts.ps1
+- Accéder à l’API: http://api.localhost
+
+2) Sans modification du hosts (dev rapide)
+- Routage local activé: http://localhost/api/v1 (router PathPrefix)
+- Santé directe: http://localhost/health
 ```
 
 ## 🛑 Arrêt
@@ -43,10 +54,10 @@ docker-compose up -d
 ./stop.sh
 
 # Ou manuellement
-docker-compose down
+docker compose down
 
 # Pour supprimer aussi les volumes (⚠️ ATTENTION : supprime toutes les données)
-docker-compose down -v
+docker compose down -v
 ```
 
 ## 🌐 Services accessibles
@@ -56,7 +67,7 @@ Une fois démarré, vous pouvez accéder aux services suivants :
 | Service | URL | Description |
 |---------|-----|-------------|
 | **API Backend** | http://api.localhost | API FastAPI principale |
-| **Traefik Dashboard** | http://traefik.localhost:8080 | Interface de routage Traefik |
+| **Traefik Dashboard** | http://traefik.localhost:8081 | Interface de routage Traefik |
 | **Portainer** | http://portainer.localhost | Gestion Docker |
 | **MinIO Console** | http://minio.localhost | Gestion des fichiers S3 |
 | **Flower** | http://flower.localhost | Monitoring Celery |
@@ -68,7 +79,7 @@ Une fois démarré, vous pouvez accéder aux services suivants :
 ### Variables d'environnement
 1. Copier `env.example` vers `.env`
 2. Modifier les valeurs selon votre environnement
-3. Redémarrer les services : `docker-compose restart`
+3. Redémarrer les services : `docker compose restart`
 
 ### Fichiers de configuration
 - `docker-compose.yml` : Configuration des services
@@ -81,12 +92,12 @@ Une fois démarré, vous pouvez accéder aux services suivants :
 ### Logs des services
 ```bash
 # Tous les services
-docker-compose logs -f
+docker compose logs -f
 
 # Service spécifique
-docker-compose logs -f backend
-docker-compose logs -f postgres
-docker-compose logs -f ollama
+docker compose logs -f backend
+docker compose logs -f postgres
+docker compose logs -f ollama
 ```
 
 ### Métriques
@@ -98,10 +109,10 @@ docker-compose logs -f ollama
 Tous les services ont des health checks configurés :
 ```bash
 # Vérifier l'état des services
-docker-compose ps
+docker compose ps
 
 # Voir les health checks en temps réel
-watch docker-compose ps
+watch docker compose ps
 ```
 
 ## 🗄️ Base de données
@@ -109,10 +120,10 @@ watch docker-compose ps
 ### Accès direct
 ```bash
 # Se connecter à PostgreSQL
-docker-compose exec postgres psql -U postgres -d influenceur_ia
+docker compose exec postgres psql -U postgres -d influenceur_ia
 
 # Voir les logs PostgreSQL
-docker-compose logs -f postgres
+docker compose logs -f postgres
 ```
 
 ### Données de démonstration
@@ -123,10 +134,10 @@ L'utilisateur admin par défaut est créé automatiquement :
 ### Sauvegarde
 ```bash
 # Créer une sauvegarde
-docker-compose exec postgres pg_dump -U postgres influenceur_ia > backup.sql
+docker compose exec postgres pg_dump -U postgres influenceur_ia > backup.sql
 
 # Restaurer une sauvegarde
-docker-compose exec -T postgres psql -U postgres -d influenceur_ia < backup.sql
+docker compose exec -T postgres psql -U postgres -d influenceur_ia < backup.sql
 ```
 
 ## 🤖 Ollama (LLMs locaux)
@@ -136,7 +147,7 @@ Par défaut, aucun modèle n'est téléchargé. Pour télécharger des modèles 
 
 ```bash
 # Accéder au conteneur Ollama
-docker-compose exec ollama ollama
+docker compose exec ollama ollama
 
 # Télécharger des modèles
 ollama pull llama2
@@ -175,10 +186,10 @@ aws --endpoint-url http://localhost:9000 s3 mb s3://influenceur-ia
 ### Workers
 ```bash
 # Voir les workers actifs
-docker-compose logs -f celery
+docker compose logs -f celery
 
 # Redémarrer les workers
-docker-compose restart celery
+docker compose restart celery
 ```
 
 ### Monitoring
@@ -211,24 +222,27 @@ sudo chown -R $USER:$USER ./traefik
 # Recréer le réseau Traefik
 docker network rm traefik-public
 docker network create traefik-public
+
+#### Conflit de port Traefik (8080)
+Si le port 8080 est déjà utilisé, le dashboard Traefik peut échouer à démarrer. Dans ce projet, le dashboard est exposé sur `8081`. Vérifiez `docker-compose.yml` (entrypoint `--entrypoints.dashboard.address=:8081` et port mappé `8081:8081`).
 ```
 
 #### Problèmes de base de données
 ```bash
 # Redémarrer PostgreSQL
-docker-compose restart postgres
+docker compose restart postgres
 
 # Vérifier les logs
-docker-compose logs postgres
+docker compose logs postgres
 ```
 
 ### Logs détaillés
 ```bash
 # Logs avec timestamps
-docker-compose logs -f --timestamps
+docker compose logs -f --timestamps
 
 # Logs des 100 dernières lignes
-docker-compose logs --tail=100
+docker compose logs --tail=100
 ```
 
 ## 🔒 Sécurité
@@ -273,10 +287,10 @@ cp env.example .env.prod
 ### Déploiement
 ```bash
 # Utiliser le fichier de production
-docker-compose --env-file .env.prod up -d
+docker compose --env-file .env.prod up -d
 
 # Ou créer un docker-compose.prod.yml
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## 📚 Ressources
@@ -290,7 +304,28 @@ docker-compose -f docker-compose.prod.yml up -d
 ## 🤝 Support
 
 En cas de problème :
-1. Vérifier les logs : `docker-compose logs -f [service]`
-2. Vérifier l'état : `docker-compose ps`
+1. Vérifier les logs : `docker compose logs -f [service]`
+2. Vérifier l'état : `docker compose ps`
 3. Consulter ce guide
 4. Vérifier la roadmap du projet
+
+## 🔁 Migrations Alembic (Base de données)
+
+### Appliquer les migrations (standard)
+```bash
+# Exécuter dans le conteneur backend
+docker compose exec backend sh -lc "cd /app/src && alembic -c alembic.ini upgrade head"
+```
+
+### Réinitialiser la base (optionnel, supprime toutes les données)
+```bash
+docker compose exec postgres sh -lc "psql -U postgres -d influenceur_ia -c 'DROP SCHEMA public CASCADE; CREATE SCHEMA public;'"
+docker compose exec backend sh -lc "cd /app/src && alembic -c alembic.ini upgrade head"
+```
+
+### Endpoints de santé (à tester)
+- http://localhost/health
+- http://localhost/api/v1/health/
+- http://localhost/api/v1/health/detailed
+
+Note: `/api/v1/health` sans slash final peut rediriger en 307 vers `/api/v1/health/`.

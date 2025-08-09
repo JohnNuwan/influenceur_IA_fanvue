@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Reverse proxy avec auto-discovery
   traefik:
@@ -11,11 +9,14 @@ services:
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--entrypoints.dashboard.address=:8080"
+      - "--entrypoints.dashboard.address=:8081"
+      - "--serversTransport.forwardingTimeouts.dialTimeout=10s"
+      - "--serversTransport.forwardingTimeouts.responseHeaderTimeout=30s"
+      - "--serversTransport.forwardingTimeouts.idleConnTimeout=90s"
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
+      - "8081:8081"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/acme.json:/acme.json
@@ -51,6 +52,8 @@ services:
     build: .
     container_name: influenceur-ia-backend
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/influenceur_ia
       - REDIS_URL=redis://redis:6379
@@ -60,6 +63,7 @@ services:
       - OLLAMA_URL=http://ollama:11434
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - PYTHONPATH=/app/src
     volumes:
       - ./src:/app/src
       - backend_logs:/app/logs
@@ -73,10 +77,20 @@ services:
       - backend-network
     labels:
       - "traefik.enable=true"
+      - "traefik.docker.network=traefik-public"
       - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
       - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "traefik.http.routers.backend.middlewares=backend-strip"
+
+      # Router local (sans host) pour dev: accessible via http://localhost/api/v1
+      - "traefik.http.routers.backend-local.rule=PathPrefix(`/api`)"
+      - "traefik.http.routers.backend-local.entrypoints=web"
+      - "traefik.http.routers.backend-local.service=backend"
+
+      # Router santé direct via localhost
+      - "traefik.http.routers.backend-health.rule=Path(`/health`)"
+      - "traefik.http.routers.backend-health.entrypoints=web"
+      - "traefik.http.routers.backend-health.service=backend"
 
   # Base de données PostgreSQL
   postgres:
@@ -99,6 +113,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Sauvegardes PostgreSQL (quotidien)
+  pgbackups:
+    image: postgres:15-alpine
+    container_name: influenceur-ia-pgbackups
+    restart: unless-stopped
+    command: sh -lc 'mkdir -p /backups && while true; do pg_dump -U postgres -h postgres influenceur_ia > /backups/backup-$(date +%F-%H%M%S).sql; sleep 86400; done'
+    environment:
+      - PGPASSWORD=postgres
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      - postgres
+    networks:
+      - backend-network
 
   # Cache Redis
   redis:
@@ -177,7 +206,7 @@ services:
     build: .
     container_name: influenceur-ia-celery
     restart: unless-stopped
-    command: celery -A src.app.core.celery_app worker --loglevel=info
+    command: celery -A app.core.celery_app:celery_app worker --loglevel=info
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/influenceur_ia
       - REDIS_URL=redis://redis:6379
@@ -187,6 +216,7 @@ services:
       - OLLAMA_URL=http://ollama:11434
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - PYTHONPATH=/app/src
     volumes:
       - ./src:/app/src
       - celery_logs:/app/logs

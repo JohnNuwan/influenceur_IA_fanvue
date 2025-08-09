@@ -3,7 +3,8 @@ Configuration settings for Influenceur IA Backend
 """
 
 from typing import List, Optional
-from pydantic import BaseSettings, validator
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import os
 
 
@@ -24,6 +25,12 @@ class Settings(BaseSettings):
     
     # CORS
     ALLOWED_HOSTS: List[str] = ["*"]
+    CORS_ALLOW_ORIGINS: List[str] = [
+        "http://localhost",
+        "http://localhost:3000",
+        "http://api.localhost",
+        "http://traefik.localhost",
+    ]
     
     # External APIs
     # OpenAI
@@ -76,12 +83,15 @@ class Settings(BaseSettings):
     
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100
+
+    # Security Headers
+    SECURITY_HEADERS_ENABLED: bool = True
     
     # Multi-tenant
     MULTI_TENANT_ENABLED: bool = True
     
-    @validator("DATABASE_URL", pre=True)
-    def assemble_db_connection(cls, v: Optional[str], values: dict) -> str:
+    @field_validator("DATABASE_URL", mode="before")
+    def assemble_db_connection(cls, v: Optional[str]) -> str:
         if isinstance(v, str):
             return v
         
@@ -94,8 +104,8 @@ class Settings(BaseSettings):
         
         return f"postgresql://{user}:{password}@{host}:{port}/{database}"
     
-    @validator("REDIS_URL", pre=True)
-    def assemble_redis_connection(cls, v: Optional[str], values: dict) -> str:
+    @field_validator("REDIS_URL", mode="before")
+    def assemble_redis_connection(cls, v: Optional[str]) -> str:
         if isinstance(v, str):
             return v
         
@@ -108,9 +118,7 @@ class Settings(BaseSettings):
             return f"redis://:{password}@{host}:{port}"
         return f"redis://{host}:{port}"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
+    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
 
 
 # Create settings instance

@@ -1,4 +1,5 @@
 import os
+import sys
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool
@@ -15,6 +16,11 @@ if config.config_file_name is not None:
 # Set SQLAlchemy URL from env or default
 db_url = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@postgres:5432/influenceur_ia")
 config.set_main_option("sqlalchemy.url", db_url)
+
+# Ensure 'src' is on sys.path for 'app.*' imports when running from project root
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 # add your model's MetaData object here
 # for 'autogenerate' support

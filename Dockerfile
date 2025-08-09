@@ -11,14 +11,20 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copier les fichiers de dépendances (depuis src)
-COPY src/requirements.txt ./requirements.txt
+# Copier un set minimal de dépendances pour build/migrations
+COPY src/requirements.base.txt ./requirements.txt
 
-# Installer les dépendances Python
+# Installer les dépendances Python minimales
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copier le code source
 COPY src/ ./src/
+
+# Définir le répertoire de travail sur le code
+WORKDIR /app/src
+
+# S'assurer que les imports 'app.*' fonctionnent (reloader inclus)
+ENV PYTHONPATH=/app/src
 
 # Créer un utilisateur non-root pour la sécurité
 RUN useradd --create-home --shell /bin/bash app \
@@ -28,5 +34,6 @@ USER app
 # Exposer le port
 EXPOSE 8000
 
-# Commande de démarrage avec hot-reload pour le développement
-CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Entrypoint qui prépare PYTHONPATH et lance uvicorn
+COPY entrypoint.sh /entrypoint.sh
+CMD ["sh", "/entrypoint.sh"]

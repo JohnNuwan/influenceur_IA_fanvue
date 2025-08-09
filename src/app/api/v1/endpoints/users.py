@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from app.core.database import get_db
 from app.models.user import User, UserRole
-from app.core.security import get_password_hash, verify_password
+from app.core.security import get_password_hash, verify_password, require_roles
 
 router = APIRouter()
 
@@ -53,7 +53,8 @@ class UserResponse(UserBase):
 async def get_users(
     skip: int = 0,
     limit: int = 100,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "manager")),
 ):
     """
     Get all users with pagination
@@ -63,7 +64,7 @@ async def get_users(
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user(user_id: int, db: Session = Depends(get_db)):
+async def get_user(user_id: int, db: Session = Depends(get_db), current_user=Depends(require_roles("admin", "manager"))):
     """
     Get user by ID
     """
@@ -77,7 +78,7 @@ async def get_user(user_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/", response_model=UserResponse)
-async def create_user(user: UserCreate, db: Session = Depends(get_db)):
+async def create_user(user: UserCreate, db: Session = Depends(get_db), current_user=Depends(require_roles("admin"))):
     """
     Create a new user
     """
@@ -113,7 +114,8 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 async def update_user(
     user_id: int,
     user_update: UserUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user=Depends(require_roles("admin", "manager")),
 ):
     """
     Update user
@@ -137,7 +139,7 @@ async def update_user(
 
 
 @router.delete("/{user_id}")
-async def delete_user(user_id: int, db: Session = Depends(get_db)):
+async def delete_user(user_id: int, db: Session = Depends(get_db), current_user=Depends(require_roles("admin"))):
     """
     Delete user
     """
