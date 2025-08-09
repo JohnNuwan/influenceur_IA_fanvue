@@ -1,0 +1,104 @@
+# Configuration Traefik pour Influenceur IA
+# Ce fichier est optionnel, la configuration principale est dans docker-compose.yml
+
+# Configuration globale
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+# Configuration des logs
+log:
+  level: INFO
+  format: json
+
+# Configuration des access logs
+accessLog:
+  format: json
+  fields:
+    defaultMode: keep
+    headers:
+      defaultMode: keep
+
+# Configuration des middlewares
+# Note: Les middlewares sont configurés via labels dans docker-compose.yml
+
+# Configuration des providers
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+    network: traefik-public
+    swarmMode: false
+    swarmModeRefreshSeconds: 15
+
+# Configuration des entrypoints
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+    http:
+      tls:
+        certResolver: letsencrypt
+  dashboard:
+    address: ":8080"
+
+# Configuration des certificats
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: admin@influenceur-ia.com
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web
+
+# Configuration des middlewares personnalisés
+# Ces middlewares peuvent être utilisés dans les labels des services
+http:
+  middlewares:
+    # Middleware pour ajouter des en-têtes de sécurité
+    security-headers:
+      headers:
+        frameDeny: true
+        sslRedirect: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        customFrameOptionsValue: "SAMEORIGIN"
+        customRequestHeaders:
+          X-Forwarded-Proto: "https"
+    
+    # Middleware pour la compression
+    compress:
+      compress: {}
+    
+    # Middleware pour le rate limiting
+    rate-limit:
+      rateLimit:
+        burst: 100
+        average: 50
+    
+    # Middleware pour CORS
+    cors:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - OPTIONS
+        accessControlAllowHeaders:
+          - "*"
+        accessControlAllowOriginList:
+          - "*"
+        accessControlMaxAge: 100
+        addVaryHeader: true

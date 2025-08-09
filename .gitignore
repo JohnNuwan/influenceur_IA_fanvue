@@ -1,0 +1,183 @@
+# Fichiers et dossiers à ignorer par Git
+
+# Environnement
+.env
+.env.*
+!.env.example
+env.local
+env.development
+env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environnements virtuels
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Base de données
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+docker-compose.*.yml
+!docker-compose.yml
+
+# Volumes Docker
+postgres_data/
+redis_data/
+minio_data/
+ollama_data/
+celery_logs/
+backend_logs/
+prometheus_data/
+grafana_data/
+portainer_data/
+
+# Cache
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# Sécurité
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# Fichiers temporaires
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Fichiers de sauvegarde
+*.bak
+*.backup
+*.old
+
+# Fichiers de configuration locale
+config.local.*
+settings.local.*
+
+# Fichiers de données
+data/
+uploads/
+media/
+static/
+
+# Fichiers de monitoring
+monitoring/local/
+grafana/local/
+prometheus/local/
+
+# Fichiers d'initialisation locale
+init-scripts/local/
+traefik/local/
+
+# Fichiers de déploiement
+deploy/
+deployment/
+scripts/local/
+
+# Fichiers de documentation générés
+docs/_build/
+docs/.doctrees/
+
+# Fichiers de cache Node.js (si présent)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers de cache Python
+.python-version
+.pip-log.txt
+.pip-delete-this-directory.txt
+
+# Fichiers de cache système
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# Fichiers de cache des éditeurs
+*~
+.#*
+\#*#
+.#*
+*~
+
+# Fichiers de cache des shells
+.bash_history
+.zsh_history
+.history
+
+# Fichiers de cache des applications
+.cache/
+.thumbnails/
+.icons/
